@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "jjg-ping": "^1.0.3",
+    "node-url-expand": "^1.0.0",
+    "prompt": "^1.1.0",
+    "proxy-checker": "^1.0.0",
+    "request": "^2.88.2",
+    "system-sleep": "^1.3.7"
+  }
+}
