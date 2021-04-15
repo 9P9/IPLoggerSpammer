@@ -89,7 +89,8 @@ function send(proxy, link) {
 			
 		}
 		else{
-               console.log(chalk.red("[Attack] Failed " + link + " not flooded | Error Code: " + res.statusCode));
+               //console.log(chalk.red("[Attack] Failed " + link + " not flooded | Error Code: " + res.statusCode));
+			   return;
                fail++;
 			 }
 			process.title = `[313] | IP Logger Spammer | Success: ${success} | Fail: ${fail} | Proxies ${proxies.length} | RateLimit ${ratelimit}`; 
@@ -120,8 +121,9 @@ function getproxies(){
 			{
 				console.log("[INFO] Scraping Proxies"); 
 				proxies = body.split('/n');
+				proxys = proxies.toString();
 				setTimeout(() => scrapeProxies(), 10 * 100 * 1000);
-				fs.writeFile('proxies.txt', proxies, function (err) {
+				fs.writeFile('proxies.txt', proxys, function (err) {
 				})
 				console.log(`[INFO] Proxies Scraped! You now have proxies`); 
 				console.log("[WARN] Please Restart Application Using Ctrl C"); 
