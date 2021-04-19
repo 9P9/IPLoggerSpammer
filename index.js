@@ -9,6 +9,7 @@ var ping = require('jjg-ping');
 const ProxyAgent = require('proxy-agent');
 var sleep = require('system-sleep');
 var proxies = fs.readFileSync('proxies.txt', 'utf-8').replace(/\r/gi, '').split('\n');
+var agents = fs.readFileSync('agents.txt', 'utf-8').replace(/\r/gi, '').split('\n');
 var referrer = fs.readFileSync('referrer.txt', 'utf-8').replace(/\r/gi, '').split('\n');
 var fail = 0;
 var success = 0; 
@@ -26,54 +27,17 @@ process.on('uncaughtRejection', e => {});
 process.warn = () => {};
 console.warn = function() {};
 
-
-const devices = [{
-    useragent: 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.235 Chrome/73.0.3683.104 Electron/5.0.0-beta.8 Safari/537.36',
-    xsuper: '{"os":"Windows","browser":"Discord Client","release_channel":"canary","client_version":"0.0.235","os_version":"10.0.17134","os_arch":"x64","client_build_number":36442,"client_event_source":null}',
-	referrer: "https://discordapp.com/",
-   xtrack: "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzc0LjAuMzcyOS4xNTcgU2FmYXJpLzUzNy4zNiIsImJyb3dzZXJfdmVyc2lvbiI6Ijc0LjAuMzcyOS4xNTciLCJvc192ZXJzaW9uIjoiMTAiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwiY2xpZW50X2J1aWxkX251bWJlciI6OTk5OSwiY2xpZW50X2V2ZW50X3NvdXJjZSI6bnVsbH0="
-}, {
-    useragent: 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.235 Chrome/73.0.3683.104 Electron/5.0.0-beta.8 Safari/537.36',
-    xsuper: '{"os":"Windows","browser":"Discord Client","release_channel":"canary","client_version":"0.0.235","os_version":"10.0.17134","os_arch":"x64","client_build_number":36442,"client_event_source":null}',
-	referrer: "https://pornhub.com",
-	xtrack: "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzc0LjAuMzcyOS4xNTcgU2FmYXJpLzUzNy4zNiIsImJyb3dzZXJfdmVyc2lvbiI6Ijc0LjAuMzcyOS4xNTciLCJvc192ZXJzaW9uIjoiMTAiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwiY2xpZW50X2J1aWxkX251bWJlciI6OTk5OSwiY2xpZW50X2V2ZW50X3NvdXJjZSI6bnVsbH0="
-}, {
-    useragent: 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.220 Chrome/71.0.3683.104 Electron/4.0.3-beta.8 Safari/537.36',
-    xsuper: '{"os":"Windows","browser":"Discord Client","release_channel":"canary","client_version":"0.0.220","os_version":"10.0.1903","os_arch":"x64","client_build_number":36442,"client_event_source":null}',
-	referrer: "https://moshimonsters.co.uk",  
-	xtrack: "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzc0LjAuMzcyOS4xNTcgU2FmYXJpLzUzNy4zNiIsImJyb3dzZXJfdmVyc2lvbiI6Ijc0LjAuMzcyOS4xNTciLCJvc192ZXJzaW9uIjoiMTAiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwiY2xpZW50X2J1aWxkX251bWJlciI6OTk5OSwiY2xpZW50X2V2ZW50X3NvdXJjZSI6bnVsbH0="
-}, {
-    useragent: "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.305 Chrome/69.0.3497.128 Electron/4.0.8 Safari/537.36",
-    xsuper: '{"os":"Windows","browser":"Discord Client","release_channel":"stable","client_version":"0.0.305","os_version":"10.0.17134","os_arch":"x64","client_build_number":36215,"client_event_source":null}',
-	referrer: "https://clubpenguin.com",   
-	xtrack: "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzc0LjAuMzcyOS4xNTcgU2FmYXJpLzUzNy4zNiIsImJyb3dzZXJfdmVyc2lvbiI6Ijc0LjAuMzcyOS4xNTciLCJvc192ZXJzaW9uIjoiMTAiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwiY2xpZW50X2J1aWxkX251bWJlciI6OTk5OSwiY2xpZW50X2V2ZW50X3NvdXJjZSI6bnVsbH0="
-}, {
-    useragent: "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.340 Chrome/72.0.3197.128 Electron/4.0.9 Safari/537.36",   
-	xsuper: '{"os":"Windows","browser":"Discord Client","release_channel":"stable","client_version":"0.0.340","os_version":"10.0.18703","os_arch":"x32","client_build_number":37215,"client_event_source":null}',
-	referrer: "https://getfucked.com",   
-	xtrack: "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzc0LjAuMzcyOS4xNTcgU2FmYXJpLzUzNy4zNiIsImJyb3dzZXJfdmVyc2lvbiI6Ijc0LjAuMzcyOS4xNTciLCJvc192ZXJzaW9uIjoiMTAiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwiY2xpZW50X2J1aWxkX251bWJlciI6OTk5OSwiY2xpZW50X2V2ZW50X3NvdXJjZSI6bnVsbH0="
-}, {
-    useragent: "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.369 Chrome/74.0.303.111 Electron/4.5.3 Safari/537.36",
-    xsuper: '{"os":"Windows","browser":"Discord Client","release_channel":"stable","client_version":"0.0.369","os_version":"10.0.18502","os_arch":"x32","client_build_number":35192,"client_event_source":null}',
-	referrer: "https://RapedByLuci.com",
-	xtrack: "eyJvcyI6IldpbmRvd3MiLCJicm93c2VyIjoiQ2hyb21lIiwiZGV2aWNlIjoiIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzc0LjAuMzcyOS4xNTcgU2FmYXJpLzUzNy4zNiIsImJyb3dzZXJfdmVyc2lvbiI6Ijc0LjAuMzcyOS4xNTciLCJvc192ZXJzaW9uIjoiMTAiLCJyZWZlcnJlciI6IiIsInJlZmVycmluZ19kb21haW4iOiIiLCJyZWZlcnJlcl9jdXJyZW50IjoiIiwicmVmZXJyaW5nX2RvbWFpbl9jdXJyZW50IjoiIiwiY2xpZW50X2J1aWxkX251bWJlciI6OTk5OSwiY2xpZW50X2V2ZW50X3NvdXJjZSI6bnVsbH0="
-}];
-
-
 function send(type, link) {
+	var useragent = agents[Math.floor(Math.random() * agents.length)];
     var proxy = proxies[Math.floor(Math.random() * proxies.length)];
 	var agent = new ProxyAgent(`${type}://` + proxy);
-	let device = devices[Math.floor(Math.random() * devices.length)];
 	let referer = referrer[Math.floor(Math.random() * referrer.length)];
     request.get(link, {
         json: true,
         agent,
         headers: {
-			'user-agent': device.useragent, 
-			'referer': referer,
-			'x-super-properties': Buffer.from(device.xsuper).toString('base64')		
-			
-        },
+			'user-agent': useragent, 
+		},
         body: {}
     }, (err, res, body) => {
         if (res && res.statusCode === 200) {
@@ -313,6 +277,3 @@ function whois(ip){
 		}
 		
 	});
-		
-		
-		
