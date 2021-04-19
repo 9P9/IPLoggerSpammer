@@ -22,10 +22,10 @@ function write(content, file) {
     fs.appendFile(file, content, function(err) {
     });
 }
-process.on('uncaughtException', e => {});
-process.on('uncaughtRejection', e => {});
-process.warn = () => {};
-console.warn = function() {};
+//process.on('uncaughtException', e => {});
+//process.on('uncaughtRejection', e => {});
+//process.warn = () => {};
+//console.warn = function() {};
 
 function send(type, link) {
 	var useragent = agents[Math.floor(Math.random() * agents.length)];
@@ -197,7 +197,7 @@ function whois(ip){
 				var url = result.URL;
 				console.log("");
 				console.log(chalk.yellow("[INFO] Checking for all possible redirects")); 
-				checker(url,type);
+				checker(url);
 				})
 		
 				break;
@@ -278,4 +278,4 @@ function whois(ip){
 		}
 		
 	});
-		
+			
