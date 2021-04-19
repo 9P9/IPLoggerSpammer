@@ -6,6 +6,7 @@ const nodeUrlExpand = require('node-url-expand');
 var proxyChecker = require('proxy-checker');
 const fs = require('fs');
 var ping = require('jjg-ping');
+const ProxyAgent = require('proxy-agent');
 var sleep = require('system-sleep');
 var proxies = fs.readFileSync('proxies.txt', 'utf-8').replace(/\r/gi, '').split('\n');
 var referrer = fs.readFileSync('referrer.txt', 'utf-8').replace(/\r/gi, '').split('\n');
@@ -59,13 +60,14 @@ const devices = [{
 }];
 
 
-function send(proxy, link) {
+function send(type, link) {
     var proxy = proxies[Math.floor(Math.random() * proxies.length)];
+	var agent = new ProxyAgent(`${type}://` + proxy);
 	let device = devices[Math.floor(Math.random() * devices.length)];
 	let referer = referrer[Math.floor(Math.random() * referrer.length)];
     request.get(link, {
         json: true,
-        proxy: 'http://' + proxy,
+        agent,
         headers: {
 			'user-agent': device.useragent, 
 			'referer': referer,
@@ -224,25 +226,49 @@ function whois(ip){
 		switch(options) {
 			case "1":
 				prompt.start();	
+				
 				prompt.get(['URL'], function(err, result) {
 				console.log('');
 				var url = result.URL;
 				console.log("");
 				console.log(chalk.yellow("[INFO] Checking for all possible redirects")); 
-				checker(url);
+				checker(url,type);
 				})
+		
 				break;
 				
 			case "2":
 				prompt.start();	
+				console.log(chalk.inverse("[INFO] Press Corrosponding Number to Select Proxy Type! ")); 
+			console.log(`[1] https
+[2] socks4
+[3] socks5`); 
+			prompt.get(['type'], function(err, result) {
+			console.log('');
+			var type = result.type;
+			switch(type) {
+				case "1": 
+					var type = "https";
+					break
+				case "2":
+					var type = "socks4";
+					break
+				case "3":
+					var type = "socks5";
+					break
+				default:
+					var type = "https";
+					break
+			}
 				prompt.get(['link'], function(err, result) {
 				console.log('');
 				console.log(chalk.red('Ip Logger Link '));
 				
 				const link = result.link;
 				console.log("");
-				proxies.forEach(proxy => send(proxy, link));
+				proxies.forEach(proxy => send(type, link));
 				});
+			})
 				break;
 				
 			case "3":
