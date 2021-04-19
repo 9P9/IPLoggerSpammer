@@ -37,7 +37,7 @@ function send(type, link) {
         agent,
         headers: {
 			'user-agent': useragent, 
-			`referer`: referer,
+			'referer': referer,
 		},
         body: {}
     }, (err, res, body) => {
@@ -278,4 +278,4 @@ function whois(ip){
 		}
 		
 	});
-	
+		
